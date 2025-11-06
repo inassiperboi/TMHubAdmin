@@ -37,7 +37,7 @@ export default function Header() {
           </div>
         </div>
 
-        <button className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors text-[#1E4471]">
+        <button className="p-2 bg-[#EF4444] hover:bg-[#D43A3A] rounded-lg transition-colors text-white">
           <LogOut className="w-5 h-5" />
         </button>
       </div>

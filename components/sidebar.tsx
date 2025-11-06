@@ -62,7 +62,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }: SidebarPr
       <div className="p-4 border-t border-[#2AB77A]">
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white text-black rounded-lg hover:bg-[#F5F5F5] transition-colors font-medium text-sm"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EF4444] text-white rounded-lg hover:bg-[#D43A3A] transition-colors font-medium text-sm"
         >
           <LogOut className="w-4 h-4" />
           {!isCollapsed && "Logout"}

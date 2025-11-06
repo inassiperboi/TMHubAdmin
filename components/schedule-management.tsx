@@ -356,12 +356,12 @@ export default function ScheduleManagement() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">No</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">Nama Hari</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">Tanggal</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">Dibuat</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-[#1E4471]">Aksi</th>
+                  <tr className="border-b border-[#E5E7EB] bg-[#2AB77A]">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">No</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama Hari</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">Tanggal</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">Dibuat</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-white">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>

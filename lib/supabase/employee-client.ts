@@ -137,3 +137,22 @@ export async function deleteEmployee(id_user: number) {
     return { success: false, error: String(error) };
   }
 }
+
+// --- GET / Hitung total pegawai ---
+export async function getTotalEmployees() {
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/user?select=id_user`, {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        Prefer: "count=exact",
+      },
+    });
+
+    const total = response.headers.get("content-range")?.split("/")[1] || "0";
+    return Number(total);
+  } catch (error) {
+    console.error("❌ Error fetching total employees:", error);
+    return 0;
+  }
+}

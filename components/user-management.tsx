@@ -20,6 +20,8 @@ export default function UserManagement() {
   const [successMessage, setSuccessMessage] = useState("")
   const [search, setSearch] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [filterJabatan, setFilterJabatan] = useState("")
+  const [uniqueJabatan, setUniqueJabatan] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
     nama_user: "",
@@ -34,14 +36,23 @@ export default function UserManagement() {
 
   useEffect(() => {
     loadEmployees()
-  }, [search])
+  }, [search, filterJabatan])
 
   const loadEmployees = async () => {
     setLoading(true)
     setError("")
     const result = await fetchEmployees(1, 100, search)
     if (result.data.length > 0 || result.total === 0) {
-      setEmployees(result.data)
+      // Filter berdasarkan jabatan jika ada filter yang dipilih
+      const filteredData = filterJabatan
+        ? result.data.filter((emp: Employee) => emp.jabatan === filterJabatan)
+        : result.data
+      
+      setEmployees(filteredData)
+      
+      // Mengumpulkan daftar jabatan unik
+      const jabatanList = Array.from(new Set(result.data.map((emp: Employee) => emp.jabatan)))
+      setUniqueJabatan(jabatanList as string[])
     } else {
       setError("Gagal memuat data pegawai")
     }
@@ -203,9 +214,9 @@ export default function UserManagement() {
           </div>
         )}
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
+        {/* Search and Filter Bar */}
+        <div className="mb-6 flex gap-4 items-center">
+          <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-[#9B9B9B]" />
             <input
               type="text"
@@ -214,6 +225,20 @@ export default function UserManagement() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#1E4471] focus:ring-1 focus:ring-[#1E4471] text-[#1E4471]"
             />
+          </div>
+          <div className="w-64">
+            <select
+              value={filterJabatan}
+              onChange={(e) => setFilterJabatan(e.target.value)}
+              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#1E4471] focus:ring-1 focus:ring-[#1E4471] text-[#1E4471]"
+            >
+              <option value="">Semua Jabatan</option>
+              {uniqueJabatan.map((jabatan) => (
+                <option key={jabatan} value={jabatan}>
+                  {jabatan}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -389,14 +414,14 @@ export default function UserManagement() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">No</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">Nama User</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">Email</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">No. Karyawan</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">Jabatan</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-[#1E4471]">No. Telepon</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-[#1E4471]">Aksi</th>
+                  <tr className="border-b border-[#E5E7EB] bg-[#2AB77A]">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">No</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama User</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">Email</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">No. Karyawan</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">Jabatan</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-white">No. Telepon</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-white">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -448,293 +473,3 @@ export default function UserManagement() {
     </div>
   )
 }
-// "use client"
-
-// import { useState, useEffect, useCallback } from "react"
-// import { Search, Edit2, Trash2, Plus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
-// import {
-//   fetchEmployees,
-//   addEmployee,
-//   updateEmployee,
-//   deleteEmployee,
-//   type Employee,
-// } from "@/lib/supabase/employee-client"
-// import { EmployeeFormModal } from "./employee-form-modal"
-
-// export default function UserManagement() {
-//   const [employees, setEmployees] = useState<Employee[]>([])
-//   const [loading, setLoading] = useState(false)
-//   const [page, setPage] = useState(1)
-//   const [limit, setLimit] = useState(10)
-//   const [total, setTotal] = useState(0)
-//   const [search, setSearch] = useState("")
-//   const [sortBy, setSortBy] = useState<"id_user" | "nama_user" | "jabatan">("id_user")
-//   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-
-//   const [modalOpen, setModalOpen] = useState(false)
-//   const [editingId, setEditingId] = useState<number | null>(null)
-//   const [formData, setFormData] = useState({
-//     nama_user: "",
-//     alamat: "",
-//     no_telp: "",
-//     no_karyawan: "",
-//     jabatan: "",
-//   })
-//   const [formError, setFormError] = useState("")
-//   const [submitLoading, setSubmitLoading] = useState(false)
-
-//   useEffect(() => {
-//     loadEmployees()
-//   }, [page, search, sortBy, sortOrder, limit])
-
-//   const loadEmployees = useCallback(async () => {
-//     setLoading(true)
-//     try {
-//       const { data, total: totalCount } = await fetchEmployees(page, limit, search, sortBy, sortOrder)
-//       setEmployees(data)
-//       setTotal(totalCount)
-//     } catch (error) {
-//       console.error("[v0] Failed to load employees:", error)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }, [page, limit, search, sortBy, sortOrder])
-
-//   const handleAddOrUpdate = async (formData: {
-//     nama_user: string
-//     alamat: string
-//     no_telp: string
-//     no_karyawan: string
-//     jabatan: string
-//   }) => {
-//     setSubmitLoading(true)
-//     try {
-//       const payload = {
-//         nama_user: formData.nama_user,
-//         alamat: formData.alamat,
-//         no_telp: Number(formData.no_telp),
-//         no_karyawan: formData.no_karyawan,
-//         jabatan: formData.jabatan,
-//       }
-
-//       if (editingId) {
-//         const result = await updateEmployee(editingId, payload)
-//         if (result.success) {
-//           await loadEmployees()
-//           setModalOpen(false)
-//           setEditingId(null)
-//           setFormData({ nama_user: "", alamat: "", no_telp: "", no_karyawan: "", jabatan: "" })
-//         } else {
-//           throw new Error(result.error || "Gagal mengupdate pegawai")
-//         }
-//       } else {
-//         const result = await addEmployee({
-//           ...payload,
-//           email: "",
-//           password: "",
-//         })
-//         if (result.success) {
-//           await loadEmployees()
-//           setModalOpen(false)
-//           setFormData({ nama_user: "", alamat: "", no_telp: "", no_karyawan: "", jabatan: "" })
-//         } else {
-//           throw new Error(result.error || "Gagal menambahkan pegawai")
-//         }
-//       }
-//     } finally {
-//       setSubmitLoading(false)
-//     }
-//   }
-
-//   const handleEdit = (employee: Employee) => {
-//     setEditingId(employee.id_user)
-//     setFormData({
-//       nama_user: employee.nama_user,
-//       alamat: employee.alamat,
-//       no_telp: String(employee.no_telp),
-//       no_karyawan: employee.no_karyawan,
-//       jabatan: employee.jabatan,
-//     })
-//     setModalOpen(true)
-//   }
-
-//   const handleDelete = async (id_user: number) => {
-//     if (confirm("Apakah Anda yakin ingin menghapus pegawai ini?")) {
-//       try {
-//         const result = await deleteEmployee(id_user)
-//         if (result.success) {
-//           await loadEmployees()
-//         } else {
-//           alert(result.error || "Gagal menghapus pegawai")
-//         }
-//       } catch (error) {
-//         console.error("[v0] Delete error:", error)
-//         alert("Gagal menghapus pegawai")
-//       }
-//     }
-//   }
-
-//   const handleCloseModal = () => {
-//     setModalOpen(false)
-//     setEditingId(null)
-//     setFormData({ nama_user: "", alamat: "", no_telp: "", no_karyawan: "", jabatan: "" })
-//   }
-
-//   const totalPages = Math.ceil(total / limit)
-
-//   return (
-//     <div className="p-8">
-//       <div className="flex justify-between items-center mb-8">
-//         <h1 className="text-3xl font-bold text-foreground">Kelola Pegawai</h1>
-//         <button
-//           onClick={() => setModalOpen(true)}
-//           className="px-6 py-2 bg-[#1E4471] text-white rounded-lg hover:bg-[#152F54] transition-colors font-medium flex items-center gap-2"
-//         >
-//           <Plus className="w-5 h-5" />
-//           Tambah Pegawai
-//         </button>
-//       </div>
-
-//       <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-//         <div className="relative">
-//           <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" />
-//           <input
-//             type="text"
-//             placeholder="Cari nama, email, no karyawan..."
-//             value={search}
-//             onChange={(e) => {
-//               setSearch(e.target.value)
-//               setPage(1)
-//             }}
-//             className="w-full pl-10 pr-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-foreground placeholder-muted focus:outline-none focus:border-[#1E4471]"
-//           />
-//         </div>
-
-//         <select
-//           value={sortBy}
-//           onChange={(e) => setSortBy(e.target.value as any)}
-//           className="px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-foreground focus:outline-none focus:border-[#1E4471]"
-//         >
-//           <option value="id_user">Urutkan by ID</option>
-//           <option value="nama_user">Urutkan by Nama</option>
-//           <option value="jabatan">Urutkan by Jabatan</option>
-//         </select>
-
-//         <select
-//           value={sortOrder}
-//           onChange={(e) => setSortOrder(e.target.value as any)}
-//           className="px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-foreground focus:outline-none focus:border-[#1E4471]"
-//         >
-//           <option value="asc">Ascending</option>
-//           <option value="desc">Descending</option>
-//         </select>
-
-//         <select
-//           value={limit}
-//           onChange={(e) => {
-//             setLimit(Number(e.target.value))
-//             setPage(1)
-//           }}
-//           className="px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-foreground focus:outline-none focus:border-[#1E4471]"
-//         >
-//           <option value="5">5 per halaman</option>
-//           <option value="10">10 per halaman</option>
-//           <option value="25">25 per halaman</option>
-//           <option value="50">50 per halaman</option>
-//         </select>
-//       </div>
-
-//       <EmployeeFormModal
-//         open={modalOpen}
-//         onOpenChange={handleCloseModal}
-//         employee={editingId ? employees.find((e) => e.id_user === editingId) || null : null}
-//         onSubmit={handleAddOrUpdate}
-//         loading={submitLoading}
-//       />
-
-//       <div className="bg-white border border-[#E5E7EB] rounded-lg overflow-hidden shadow-sm">
-//         {loading && employees.length === 0 ? (
-//           <div className="flex justify-center items-center py-12">
-//             <Loader2 className="w-8 h-8 animate-spin text-[#1E4471]" />
-//           </div>
-//         ) : employees.length === 0 ? (
-//           <div className="py-12 text-center text-muted">Tidak ada data pegawai</div>
-//         ) : (
-//           <>
-//             <div className="overflow-x-auto">
-//               <table className="w-full">
-//                 <thead className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-//                   <tr>
-//                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">ID</th>
-//                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Nama Pegawai</th>
-//                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">No. Karyawan</th>
-//                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Jabatan</th>
-//                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">No. Telepon</th>
-//                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Aksi</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   {employees.map((employee) => (
-//                     <tr
-//                       key={employee.id_user}
-//                       className="border-b border-[#E5E7EB] hover:bg-[#F8F9FA] transition-colors"
-//                     >
-//                       <td className="px-6 py-4 text-foreground font-medium text-sm">{employee.id_user}</td>
-//                       <td className="px-6 py-4 text-foreground font-medium">{employee.nama_user}</td>
-//                       <td className="px-6 py-4 text-foreground text-sm">{employee.no_karyawan}</td>
-//                       <td className="px-6 py-4 text-foreground text-sm">{employee.jabatan}</td>
-//                       <td className="px-6 py-4 text-foreground text-sm">{employee.no_telp}</td>
-//                       <td className="px-6 py-4">
-//                         <button
-//                           onClick={() => handleEdit(employee)}
-//                           className="text-[#1E4471] hover:text-[#152F54] text-sm font-medium mr-4 flex items-center gap-1 inline-flex"
-//                         >
-//                           <Edit2 className="w-4 h-4" />
-//                           Edit
-//                         </button>
-//                         <button
-//                           onClick={() => handleDelete(employee.id_user)}
-//                           className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1 inline-flex"
-//                         >
-//                           <Trash2 className="w-4 h-4" />
-//                           Hapus
-//                         </button>
-//                       </td>
-//                     </tr>
-//                   ))}
-//                 </tbody>
-//               </table>
-//             </div>
-
-//             <div className="px-6 py-4 bg-[#F8F9FA] border-t border-[#E5E7EB] flex items-center justify-between">
-//               <div className="text-sm text-muted">
-//                 Menampilkan {(page - 1) * limit + 1} hingga {Math.min(page * limit, total)} dari {total} pegawai
-//               </div>
-//               <div className="flex items-center gap-2">
-//                 <button
-//                   onClick={() => setPage(Math.max(1, page - 1))}
-//                   disabled={page === 1}
-//                   className="px-3 py-1 border border-[#E5E7EB] rounded-lg text-foreground hover:bg-[#E5E7EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-//                 >
-//                   <ChevronLeft className="w-4 h-4" />
-//                   Sebelumnya
-//                 </button>
-//                 <span className="text-sm text-foreground px-3">
-//                   Halaman {page} dari {totalPages}
-//                 </span>
-//                 <button
-//                   onClick={() => setPage(Math.min(totalPages, page + 1))}
-//                   disabled={page === totalPages}
-//                   className="px-3 py-1 border border-[#E5E7EB] rounded-lg text-foreground hover:bg-[#E5E7EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-//                 >
-//                   Selanjutnya
-//                   <ChevronRight className="w-4 h-4" />
-//                 </button>
-//               </div>
-//             </div>
-//           </>
-//         )}
-//       </div>
-//     </div>
-//   )
-// }

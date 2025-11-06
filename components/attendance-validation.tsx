@@ -39,6 +39,12 @@ export default function AttendanceValidation() {
 
     if (success) {
       setAttendances(attendances.map((a) => (a.id_detail_schedule === id ? { ...a, status: newStatus } : a)))
+      // Dispatch a global event so dashboard (and other consumers) can refresh counts
+      try {
+        window.dispatchEvent(new CustomEvent('detailScheduleUpdated'))
+      } catch (e) {
+        // ignore if window not available
+      }
       alert("✅ Status berhasil diperbarui.")
     } else {
       setError("Gagal mengubah status. Coba lagi.")
@@ -75,6 +81,13 @@ export default function AttendanceValidation() {
 
       {/* Filter Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Cari Nama..."
+          value={filterName}
+          onChange={(e) => setFilterName(e.target.value)}
+          className="px-4 py-2 border border-border rounded-lg bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+        />
         <select
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
@@ -84,19 +97,6 @@ export default function AttendanceValidation() {
           {uniqueDates.map((date) => (
             <option key={date} value={date}>
               {date}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={filterName}
-          onChange={(e) => setFilterName(e.target.value)}
-          className="px-4 py-2 border border-border rounded-lg bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-        >
-          <option value="">Semua Nama</option>
-          {uniqueNames.map((name) => (
-            <option key={name} value={name}>
-              {name}
             </option>
           ))}
         </select>
@@ -136,13 +136,13 @@ export default function AttendanceValidation() {
           <div className="p-8 text-center text-muted">Tidak ada data absensi yang sesuai dengan filter</div>
         ) : (
           <table className="w-full">
-            <thead className="bg-background border-b border-border">
+            <thead className="bg-[#2AB77A] border-b border-border">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Nama</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Tanggal</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Keterangan</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Ubah Status</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Nama</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Tanggal</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Status</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Keterangan</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-white">Ubah Status</th>
               </tr>
             </thead>
             <tbody>
