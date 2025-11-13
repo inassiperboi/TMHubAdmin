@@ -12,7 +12,7 @@ import EmployeeAttendanceData from "@/components/employee-attendance-data"
 import Header from "@/components/header"
 import { ProtectedLayout } from "@/components/protected-layout"
 import { getTotalEmployees } from "@/lib/supabase/employee-client"
-import { getApprovedAttendanceCount, getTodayAttendanceCount, getApprovedIjinCount, getMonthlyAttendanceCounts } from "@/lib/supabase/detail-schedule-client"
+import { getApprovedAttendanceCount, getTodayAttendanceCount, getApprovedIjinCount, getMonthlyAttendanceCounts, getPendingStatusCount } from "@/lib/supabase/detail-schedule-client"
 import { addNotification } from "@/lib/supabase/notification-client"
 
 export default function AdminDashboard() {
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
 function OverviewDashboard() {
   const [totalPegawai, setTotalPegawai] = useState<number | null>(null)
   const [approvedToday, setApprovedToday] = useState<number | null>(null)
-  const [attendedToday, setAttendedToday] = useState<number | null>(null)
+  const [pendingToday, setPendingToday] = useState<number | null>(null)
   const [ijinApprovedToday, setIjinApprovedToday] = useState<number | null>(null)
   const [monthlyStats, setMonthlyStats] = useState<Array<{ label: string; count: number }>>([])
   const [formTitle, setFormTitle] = useState("")
@@ -77,15 +77,15 @@ function OverviewDashboard() {
 
   // fetchData extracted so it can be called on mount and when detail_schedule changes
   async function fetchData() {
-    const [total, approved, attended, ijinApproved] = await Promise.all([
+    const [total, approved, pending, ijinApproved] = await Promise.all([
       getTotalEmployees(),
       getApprovedAttendanceCount(),
-      getTodayAttendanceCount(),
+      getPendingStatusCount(),
       getApprovedIjinCount(),
     ])
     setTotalPegawai(total)
     setApprovedToday(approved)
-    setAttendedToday(attended)
+    setPendingToday(pending)
     setIjinApprovedToday(ijinApproved)
 
     // ambil statistik bulanan (6 bulan terakhir) untuk 'Hadir Telah Disetujui'
@@ -108,8 +108,9 @@ function OverviewDashboard() {
   const stats = [
   { title: "Total Pegawai", value: totalPegawai ?? "Loading...", icon: Users, color: "#1E4471" },
   { title: "Hadir Telah Disetujui", value: approvedToday ?? "Loading...", icon: CheckCircle, color: "#2AB77A" },
-  { title: "Sudah Absen Hari Ini", value: attendedToday ?? "Loading...", icon: Calendar, color: "#FFE16A" },
   { title: "Ijin Telah Disetujui", value: ijinApprovedToday ?? "Loading...", icon: ClipboardList, color: "#2AB27B" },
+  { title: "Menunggu Validasi", value: pendingToday ?? "Loading...", icon: Calendar, color: "#FFE16A" },
+
   ]
 
   return (
